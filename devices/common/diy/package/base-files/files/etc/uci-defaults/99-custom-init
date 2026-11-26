@@ -1,0 +1,86 @@
+#!/bin/sh
+
+# ==========================================
+# 1. Network / DHCP (LAN IP: 192.168.188.254)
+# ==========================================
+uci set network.lan.ipaddr='192.168.188.254'
+uci set network.lan.ip6assign=''
+uci delete network.wan6 2>/dev/null
+
+# ==========================================
+# 2. Web management port -> 9394
+# ==========================================
+uci -q delete uhttpd.main.listen_http
+uci add_list uhttpd.main.listen_http='0.0.0.0:9394'
+uci add_list uhttpd.main.listen_http='[::]:9394'
+uci set uhttpd.main.listen_https='' 2>/dev/null
+
+# ==========================================
+# 2b. Disable global IPv6
+# ==========================================
+uci delete network.globals.ula_prefix
+uci show network | grep -E "interface\..*6" | cut -d'.' -f2 | cut -d'=' -f1 | while read -r iface; do
+    uci delete network."$iface"
+done
+uci set dhcp.lan.dhcpv6='disabled'
+uci set dhcp.lan.ra='disabled'
+uci set dhcp.lan.ndp='disabled'
+uci set dhcp.lan.ra_mla='0'
+
+# ==========================================
+# 3. System hostname / timezone
+# ==========================================
+uci set system.@system[0].hostname='Routes.Live'
+uci set system.@system[0].zonename='Asia/Shanghai'
+uci set system.@system[0].timezone='CST-8'
+
+# ==========================================
+# 4. WiFi config (SSID / psk2 / auto channel)
+# ==========================================
+. /lib/functions.sh
+
+/sbin/wifi config
+
+setup_wifi_device() {
+    local device="$1"
+    uci set wireless."$device".country='CN'
+    uci set wireless."$device".channel='auto'
+    uci set wireless."$device".disabled='0'
+}
+
+setup_wifi_iface() {
+    local config="$1"
+    local device
+    local band
+
+    config_get device "$config" device
+    config_get band "$device" band
+
+    uci set wireless."$config".encryption='psk2'
+    uci set wireless."$config".key='xrx@917126A'
+
+    if [ "$band" = "2g" ]; then
+        uci set wireless."$config".ssid='Routes.Live'
+    elif [ "$band" = "5g" ]; then
+        uci set wireless."$config".ssid='Routes.Live'
+    else
+        uci set wireless."$config".ssid="Routes.Live_$device"
+    fi
+}
+
+config_load wireless
+config_foreach setup_wifi_device wifi-device
+config_foreach setup_wifi_iface wifi-iface
+
+# ==========================================
+# 5. Commit UCI changes
+# ==========================================
+uci commit network
+uci commit dhcp
+uci commit system
+uci commit wireless
+
+# root password -> free@168
+printf "free@168\nfree@168\n" | passwd root
+
+exit 0
