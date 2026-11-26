@@ -83,3 +83,7 @@ sed -i "s/OpenWrt/Kwrt/g" package/base-files/files/bin/config_generate package/b
 sed -i -e "s/set \${s}.country='\${country || ''}'/set \${s}.country='\${country || \"CN\"}'/g" -e "s/set \${s}.disabled=.*/set \${s}.disabled='0'/" package/network/config/wifi-scripts/files/lib/wifi/mac80211.uc
 
 rm -rf package/feeds/packages/jool package/feeds/routing/batman-adv
+
+# 降级 xray-core 至 26.3.27（go1.26 兼容；feed 最新 26.11.9 要求 go>=1.27 无法编译），
+# 同时去除新版 eip93/cronet/naive 专用段（旧版源码无对应脚本）
+cp -f diy/override/xray-core/Makefile feeds/kiddin9/xray-core/Makefile
