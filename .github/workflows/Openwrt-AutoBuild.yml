@@ -9,6 +9,8 @@
 name: Build OpenWrt
 
 on: 
+  push:
+    branches: [25.12]
   repository_dispatch:
   workflow_dispatch:
     inputs:
