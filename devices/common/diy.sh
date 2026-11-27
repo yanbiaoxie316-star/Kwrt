@@ -87,3 +87,6 @@ rm -rf package/feeds/packages/jool package/feeds/routing/batman-adv
 # 降级 xray-core 至 26.3.27（go1.26 兼容；feed 最新 26.11.9 要求 go>=1.27 无法编译），
 # 同时去除新版 eip93/cronet/naive 专用段（旧版源码无对应脚本）
 cp -f diy/override/xray-core/Makefile feeds/kiddin9/xray-core/Makefile
+# 移除 feed 为新版源码打的功能补丁（anytls/naive/ssr/tuic/snell/shadowtls/kcptun/eip93 等），
+# 旧版 26.3.27 源码不含对应改动，hunk 全部失败导致编译中断
+rm -f feeds/kiddin9/xray-core/patches/*.patch

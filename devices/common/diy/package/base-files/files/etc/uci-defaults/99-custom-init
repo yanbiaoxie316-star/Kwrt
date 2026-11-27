@@ -8,11 +8,11 @@ uci set network.lan.ip6assign=''
 uci delete network.wan6 2>/dev/null
 
 # ==========================================
-# 2. Web management port -> 9394
+# 2. Web management port -> 80
 # ==========================================
 uci -q delete uhttpd.main.listen_http
-uci add_list uhttpd.main.listen_http='0.0.0.0:9394'
-uci add_list uhttpd.main.listen_http='[::]:9394'
+uci add_list uhttpd.main.listen_http='0.0.0.0:80'
+uci add_list uhttpd.main.listen_http='[::]:80'
 uci set uhttpd.main.listen_https='' 2>/dev/null
 
 # ==========================================
@@ -57,7 +57,7 @@ setup_wifi_iface() {
     config_get band "$device" band
 
     uci set wireless."$config".encryption='psk2'
-    uci set wireless."$config".key='xrx@917126A'
+    uci set wireless."$config".key='password'
 
     if [ "$band" = "2g" ]; then
         uci set wireless."$config".ssid='Routes.Live'
@@ -80,7 +80,7 @@ uci commit dhcp
 uci commit system
 uci commit wireless
 
-# root password -> free@168
-printf "free@168\nfree@168\n" | passwd root
+# root password -> password
+printf "password\npassword\n" | passwd root
 
 exit 0
